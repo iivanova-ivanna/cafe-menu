@@ -11,8 +11,6 @@ import json
 import sys
 from pathlib import Path
 
-from flet.controls import page
-
 MENU_DIR = Path(__file__).parent / "menu"
 MAX_PRICE = 100
 
@@ -102,6 +100,7 @@ def show_window(dishes, errors):
         page.title = "Меню кофейни"
         page.window.width = 700
         page.window.height = 500
+        page.theme_mode = ft.ThemeMode.DARK
 
         def updateTable():
             nonlocal dishes
@@ -127,9 +126,14 @@ def show_window(dishes, errors):
             rows=[],
         )
 
+        scrollTable = ft.ListView(
+            controls=[table],
+            expand=True,
+        )
+
         field = ft.Container(
             expand=True,
-            content=table,
+            content=scrollTable,
             padding=5,
             bgcolor="#111315",
             border_radius=8,
@@ -142,6 +146,7 @@ def show_window(dishes, errors):
         )
 
         updateTable()
+
 
         page.add(field,
                  ft.Text(summary(dishes), size=20),
