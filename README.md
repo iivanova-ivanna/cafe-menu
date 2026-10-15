@@ -11,7 +11,7 @@
 ### 1. Скачайте проект
 
 ```bash
-git clone <ссылка на репозиторий>
+git clone https://github.com/iivanova-ivanna/cafe-menu.git
 cd cafe-menu
 ```
 
