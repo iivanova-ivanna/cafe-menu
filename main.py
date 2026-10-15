@@ -11,6 +11,8 @@ import json
 import sys
 from pathlib import Path
 
+from flet.controls import page
+
 MENU_DIR = Path(__file__).parent / "menu"
 MAX_PRICE = 100
 
@@ -94,42 +96,59 @@ def print_menu(dishes, errors):
 
 
 def show_window(dishes, errors):
-    import tkinter as tk
-    from tkinter import ttk
+    import flet as ft
 
-    root = tk.Tk()
-    root.title("Меню кофейни")
+    def mainGUI(page: ft.Page):
+        page.title = "Меню кофейни"
+        page.window.width = 700
+        page.window.height = 500
 
-    columns = ("name", "category", "price", "author")
-    titles = {"name": "Блюдо", "category": "Категория", "price": "Цена, BYN", "author": "Автор"}
-    table = ttk.Treeview(root, columns=columns, show="headings", height=14)
-    for col in columns:
-        table.heading(col, text=titles[col], command=lambda c=col: sort_by(c))
-        table.column(col, width=130 if col != "name" else 200)
-    table.pack(padx=10, pady=10, fill="both", expand=True)
+        def updateTable():
+            nonlocal dishes
+            for dish in dishes:
+                table.rows.append(
+                    ft.DataRow(
+                        cells=[
+                            ft.DataCell(ft.Text(dish["name"])),
+                            ft.DataCell(ft.Text(dish["category"])),
+                            ft.DataCell(ft.Text(dish["price"])),
+                            ft.DataCell(ft.Text(dish["author"])),
+                        ]
+                    )
+                )
 
-    state = {"column": "category", "reverse": False}
+        table = ft.DataTable(
+            columns=[
+                ft.DataColumn(ft.Text("Блюдо", size=18, weight=ft.FontWeight.BOLD)),
+                ft.DataColumn(ft.Text("Категория", size=18, weight=ft.FontWeight.BOLD)),
+                ft.DataColumn(ft.Text("Цена, BYN", size=18, weight=ft.FontWeight.BOLD)),
+                ft.DataColumn(ft.Text("Автор", size=18, weight=ft.FontWeight.BOLD)),
+            ],
+            rows=[],
+        )
 
-    def fill():
-        table.delete(*table.get_children())
-        key = state["column"]
-        rows = sorted(dishes, key=lambda d: (d[key], d["name"]), reverse=state["reverse"])
-        for d in rows:
-            table.insert("", "end", values=(d["name"], d["category"], f"{d['price']:.2f}", d["author"]))
+        field = ft.Container(
+            expand=True,
+            content=table,
+            padding=5,
+            bgcolor="#111315",
+            border_radius=8,
+            border=ft.Border(
+                top=ft.BorderSide(1.5, "black"),
+                bottom=ft.BorderSide(1.5, "black"),
+                left=ft.BorderSide(1.5, "black"),
+                right=ft.BorderSide(1.5, "black")
+            )
+        )
 
-    def sort_by(column):
-        state["reverse"] = (state["column"] == column) and not state["reverse"]
-        state["column"] = column
-        fill()
+        updateTable()
 
-    fill()
-    tk.Label(root, text=summary(dishes), font=("Arial", 11)).pack(pady=5)
-    if errors:
-        tk.Label(root, text="Файлы с ошибками:\n" + "\n".join(errors),
-                 fg="red", justify="left", wraplength=620).pack(padx=10, pady=5)
-    tk.Label(root, text="Нажмите на заголовок столбца, чтобы отсортировать",
-             fg="gray").pack(pady=(0, 10))
-    root.mainloop()
+        page.add(field,
+                 ft.Text(summary(dishes), size=20),
+                 ft.Container(height=10),
+                 )
+
+    ft.run(mainGUI)
 
 
 def main():
